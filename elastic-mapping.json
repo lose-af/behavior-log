@@ -1,0 +1,64 @@
+{
+	"dynamic_templates": [],
+	"properties": {
+		"@timestamp": {
+			"type": "date"
+		},
+		"data": {
+			"type": "text",
+			"analyzer": "hao_index_mode",
+			"search_analyzer": "hao_search_mode",
+			"fielddata": true,
+			"fielddata_frequency_filter": {
+				"min": 0,
+				"max": 1,
+				"min_segment_size": 50
+			}
+		},
+		"dimension": {
+			"type": "keyword"
+		},
+		"locations": {
+			"properties": {
+				"object": {
+					"properties": {
+						"x": {
+							"type": "long"
+						},
+						"y": {
+							"type": "long"
+						},
+						"z": {
+							"type": "long"
+						}
+					}
+				},
+				"subject": {
+					"properties": {
+						"x": {
+							"type": "long"
+						},
+						"y": {
+							"type": "long"
+						},
+						"z": {
+							"type": "long"
+						}
+					}
+				}
+			}
+		},
+		"object": {
+			"type": "keyword",
+			"index_options": "freqs",
+			"norms": true
+		},
+		"subject": {
+			"type": "keyword",
+			"index_options": "freqs"
+		},
+		"type": {
+			"type": "keyword"
+		}
+	}
+}

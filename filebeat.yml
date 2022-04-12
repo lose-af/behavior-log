@@ -1,0 +1,70 @@
+filebeat.inputs:
+        - type: filestream
+          enabled: true
+          paths:
+                  - c:\your\log\storage\location\*.ndjson
+          json.keys_under_root: false
+          json.overwrite_keys: true
+          json.add_error_key: true
+
+processors:
+        - decode_json_fields:
+                  fields: ['message']
+                  process_array: false
+                  max_depth: 3
+                  target: ''
+                  overwrite_keys: true
+                  add_error_key: true
+        - decode_base64_field:
+                  when.not.equals:
+                          raw_data: ''
+                  field:
+                          from: 'raw_data'
+                          to: 'data'
+                  ignore_missing: true
+                  fail_on_error: true
+        - decode_base64_field:
+                  when.not.equals:
+                          raw_subject: ''
+                  field:
+                          from: 'raw_subject'
+                          to: 'subject'
+                  ignore_missing: true
+                  fail_on_error: true
+        - decode_base64_field:
+                  when.not.equals:
+                          raw_object: ''
+                  field:
+                          from: 'raw_object'
+                          to: 'object'
+                  ignore_missing: true
+                  fail_on_error: true
+        - drop_fields:
+                  when.equals:
+                          dimension: ''
+                  fields: ['dimension']
+                  ignore_missing: true
+        - drop_fields:
+                  fields:
+                          - 'host'
+                          - 'ecs'
+                          - 'log'
+                          - 'agent'
+                          - 'input'
+                          - 'raw_data'
+                          - 'raw_subject'
+                          - 'raw_object'
+                          - 'message'
+                  ignore_missing: true
+
+output.elasticsearch:
+        hosts: ['localhost:9200']
+
+        protocol: 'https'
+        ssl.verification_mode: none
+
+        username: 'elastic'
+        password: '12345678'
+
+        indices:
+                - index: 'behavior-log'
