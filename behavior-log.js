@@ -266,26 +266,17 @@ var conf = JSON.parse(confFile.read());
 
 //日志文件
 function GetTodayLogPath() {
-	return './logs/BehaviorLog-' + system.getTimeStr().substr(0, 10) + '.csv';
+	return './logs/BehaviorLog-' + system.getTimeStr().substr(0, 10) + '.ndjson';
 }
 
 var logFile;
 function OpenNewFile() {
 	let nowLogPath = GetTodayLogPath();
 
-	var isNewFile = false;
-	if (!file.exists(nowLogPath)) isNewFile = true;
-
 	logFile = file.open(nowLogPath, file.AppendMode);
 	if (!logFile) {
 		throw Error('日志文件打开失败！\n行为日志将无法正常工作！');
 	}
-
-	if (isNewFile)
-		file.writeLine(
-			nowLogPath,
-			'\ufeff时间,维度,主体,X,Y,Z,事件,目标,x,y,z,附加信息'
-		);
 }
 OpenNewFile();
 
@@ -352,30 +343,39 @@ function writeLog(
 	tz,
 	notes
 ) {
-	let logStr =
-		system.getTimeStr() +
-		',' +
-		dim +
-		',' +
-		doer +
-		',' +
-		dx +
-		',' +
-		dy +
-		',' +
-		dz +
-		',' +
-		event +
-		',' +
-		target +
-		',' +
-		tx +
-		',' +
-		ty +
-		',' +
-		tz +
-		',' +
-		notes;
+	// ISO-8601 date and time(added ms).
+	// Example: 2022-04-03T13:52:46.017+08:00
+	const curTimeStr = `${system.getTimeStr().substr(0, 10)}T${system
+		.getTimeStr()
+		.substr(11, 19)}.${system
+		.getTimeObj()
+		.ms.toString()
+		.padStart(3, '0')}+08:00`;
+
+	if (dx === '') {
+		dx = null;
+	}
+	if (dy === '') {
+		dy = null;
+	}
+	if (dz === '') {
+		dz = null;
+	}
+	if (tx === '') {
+		tx = null;
+	}
+	if (ty === '') {
+		ty = null;
+	}
+	if (tz === '') {
+		tz = null;
+	}
+
+	const logStr = `{"@timestamp":"${curTimeStr}","type":"${event}","raw_data":"${data.toBase64(
+		notes
+	)}","raw_subject":"${data.toBase64(doer)}","raw_object":"${data.toBase64(
+		target
+	)}","dimension":"${dim}","locations.subject":{"x":${dx},"y":${dy},"z":${dz}},"locations.object":{"x":${tx},"y":${ty},"z":${tz}}}`;
 
 	if (NoOutputContent.length != 0) {
 		let no = false;
@@ -607,11 +607,11 @@ if (settings.onPlayerCmd.LogToFile || settings.onPlayerCmd.LogToConsole) {
 				pos.x.toFixed(0),
 				pos.y.toFixed(0),
 				pos.z.toFixed(0),
-				cmd,
 				'',
 				'',
 				'',
-				''
+				'',
+				cmd
 			);
 		} catch (exception) {
 			if (_SHOW_ERROR_INFO) throw exception;
@@ -637,11 +637,11 @@ if (settings.onChat.LogToFile || settings.onChat.LogToConsole) {
 				pos.x.toFixed(0),
 				pos.y.toFixed(0),
 				pos.z.toFixed(0),
-				msg,
 				'',
 				'',
 				'',
-				''
+				'',
+				msg
 			);
 		} catch (exception) {
 			if (_SHOW_ERROR_INFO) throw exception;
@@ -672,11 +672,11 @@ if (settings.onChangeDim.LogToFile || settings.onChangeDim.LogToConsole) {
 				pos.x.toFixed(0),
 				pos.y.toFixed(0),
 				pos.z.toFixed(0),
-				'前往' + dimName,
 				'',
 				'',
 				'',
-				''
+				'',
+				'前往' + dimName
 			);
 		} catch (exception) {
 			if (_SHOW_ERROR_INFO) throw exception;
