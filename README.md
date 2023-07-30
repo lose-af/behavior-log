@@ -1,6 +1,6 @@
 # Behavior Log
 
-原地址: https://github.com/LiteLScript-Dev/LXL-Plugins/blob/main/BehaviorLog
+原地址: https://github.com/YQ-LL-Plugins/LLSE-BehaviorLog
 
 ### 修改内容
 
